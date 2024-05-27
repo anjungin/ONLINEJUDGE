@@ -1,18 +1,14 @@
-console.log(new Date())
-let a = require('fs').readFileSync('예제1.txt').toString().trim().split('\n');
+let a = require('fs').readFileSync('../example/마법사상어와비바라기2.txt').toString().trim().split('\n');
 let n=a[0].split(' ').map(Number)[0];
 let m=a[0].split(' ').map(Number)[1];
 let cloud=[[0,n-1],[1,n-1],[0,n-2],[1,n-2]] //좌표기준
 let rainAmount=0;
 
 let rain=[];
-let originRain=[];
 for (let i = 0; i < n; i++) {
     rain[i]=[];
-    originRain[i]=[];
     for (let j = 0; j < n; j++) {
         rain[i][j]=a[i+1]?.split(' ').map(Number)[j];
-        originRain[i][j]=a[i+1]?.split(' ').map(Number)[j];
     }
 }
 
@@ -44,6 +40,7 @@ let setBottom = function (n,s) {
 
 let setSecondCloudLocation = function () {
     let newCloud=[];
+    let originRain=JSON.parse(JSON.stringify(rain));
     rainAmount=0;
     rain.forEach((row,idx)=>{
         row.forEach((cell,cidx)=>{
@@ -56,11 +53,25 @@ let setSecondCloudLocation = function () {
     });
 
     cloud.forEach(v=>{
+        rainAmount-=rain[v[1]][v[0]];
         rain[v[1]][v[0]]=originRain[v[1]][v[0]];
+        rainAmount+=rain[v[1]][v[0]];
+    })
+
+    newCloud=newCloud.filter(item=>{
+        return !cloud.some(item2 => arraysEqual(item, item2));
     })
 
     cloud=newCloud;
 }
+
+const arraysEqual = (a, b) => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+};
 
 let setCloudLocation = function (n,s,d) {
     let size = s>=n?s%n:s;
@@ -130,7 +141,6 @@ let onWaterPasteBug = function () {
             if (rain[y-1][x+1]>0) water++;
         }
         rain[y][x] += water;
-        originRain[y][x] += water;
         water=0;
     });
 }
@@ -145,11 +155,9 @@ for (let i = 0; i < m; i++) {
         let row=v[1];
         let cell=v[0];
         rain[row][cell]+=1;
-        originRain[row][cell]+=1;
     });
 
     onWaterPasteBug();
     setSecondCloudLocation();
 }
 console.log(rainAmount)
-console.log(new Date())
